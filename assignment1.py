@@ -59,6 +59,7 @@ plt.savefig("prophet.png")
 comp = modelFit.plot_components(pred)
 
 # %%
-pred
+pred = pred[['yhat']]
+pred = pred[-744:]
 
 
