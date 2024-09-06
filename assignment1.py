@@ -13,8 +13,7 @@ data = pd.read_csv( "https://github.com/dustywhite7/econ8310-assignment1/raw/mai
 
 # %%
 # Generate x and y matrices
-eqn = """trips ~ -1 + month + day + 
-      hour"""
+eqn = """trips ~ -1 + month + day + hour"""
 y,x = pt.dmatrices( eqn, data=data )
 
 # Initialize and fit the model
@@ -26,22 +25,21 @@ modelFit = model.gridsearch( np.asarray(x), y )
 titles = [ 'month', 'day', 'hour' ]
 
 fig = subplots.make_subplots(rows = 1, cols = 3, 
-	subplot_titles = titles)
-fig['layout'].update(height = 800, width = 1200, 
-	title='pyGAM', showlegend = False)
+	subplot_titles = titles )
+fig['layout'].update( height = 800, width = 1200, 
+	title='pyGAM', showlegend = False )
 
 # %%
 for i, title in enumerate(titles):
-  XX = modelFit.generate_X_grid(term=i)
-  pdep, confi = modelFit.partial_dependence(term=i, width=.95)
-  trace = go.Scatter(x=XX[:,i], y=pdep, mode='lines', 
-  	name='Effect')
-  ci1 = go.Scatter(x = XX[:,i], y=confi[:,0], 
-  	line=dict(dash='dash', color='grey'), 
+  XX = modelFit.generate_X_grid(term = i)
+  pdep, confi = modelFit.partial_dependence(term = i, width = .95 )
+  trace = go.Scatter(x = XX[:,i], y = pdep, mode = 'lines', name = 'Effect')
+  ci1 = go.Scatter(x = XX[:,i], y = confi[:,0], 
+  	line = dict(dash='dash', color='grey'), 
     	name='95% CI')
-  ci2 = go.Scatter(x = XX[:,i], y=confi[:,1], 
-  	line=dict(dash='dash', color='grey'), 
-    name='95% CI')
+  ci2 = go.Scatter(x = XX[:,i], y = confi[:,1], 
+  	line = dict(dash = 'dash', color = 'grey'), 
+    name = '95% CI')
 
   if i<3:
     fig.append_trace(trace, 1, i+1)
