@@ -1,65 +1,64 @@
 # %%
-#Import statements
+from pygam import LinearGAM, s, f, l
 import pandas as pd
+import patsy as pt
 import numpy as np
-from prophet import Prophet
-import plotly.express as px
+from plotly import subplots
+import plotly.offline as py
+import plotly.graph_objs as go
 
-# Read data, then set the index to be the date
-# NOTE: make the file a single line!!
-data = pd.read_csv("https://github.com/dustywhite7/econ8310-assignment1/raw/main/assignment_data_train.csv")
-
-# %%
-data
+# Prep the dataset
+#   Put this back on one line!!
+data = pd.read_csv( "https://github.com/dustywhite7/econ8310-assignment1/raw/main/assignment_data_train.csv" )
 
 # %%
-data['datetime'] = pd.to_datetime(data['Timestamp'], 
-	format='%Y-%m-%d %H:%M:%S')
-data.set_index(pd.DatetimeIndex(data['Timestamp']), 
-	inplace=True)
+# Generate x and y matrices
+eqn = """trips ~ -1 + month + day + 
+      hour"""
+y,x = pt.dmatrices( eqn, data=data )
+
+# Initialize and fit the model
+model = LinearGAM( s(0) + s(1) + s(2) )
+modelFit = model.gridsearch( np.asarray(x), y )
 
 # %%
-# Plot the data
-px.line(data, x='Timestamp', y='trips',
-       labels = {
-           'datetime' : 'Date',
-           'logpm' : 'Logged Pollution Level'
-       })
+# Specify plot titles and shape
+titles = [ 'month', 'day', 'hour' ]
+
+fig = subplots.make_subplots(rows = 1, cols = 3, 
+	subplot_titles = titles)
+fig['layout'].update(height = 800, width = 1200, 
+	title='pyGAM', showlegend = False)
 
 # %%
-data
+for i, title in enumerate(titles):
+  XX = modelFit.generate_X_grid(term=i)
+  pdep, confi = modelFit.partial_dependence(term=i, width=.95)
+  trace = go.Scatter(x=XX[:,i], y=pdep, mode='lines', 
+  	name='Effect')
+  ci1 = go.Scatter(x = XX[:,i], y=confi[:,0], 
+  	line=dict(dash='dash', color='grey'), 
+    	name='95% CI')
+  ci2 = go.Scatter(x = XX[:,i], y=confi[:,1], 
+  	line=dict(dash='dash', color='grey'), 
+    name='95% CI')
+
+  if i<3:
+    fig.append_trace(trace, 1, i+1)
+    fig.append_trace(ci1, 1, i+1)
+    fig.append_trace(ci2, 1, i+1)
+  else:
+    fig.append_trace(trace, 2, i-2)
+    fig.append_trace(ci1, 2, i-2)
+    fig.append_trace(ci2, 2, i-2)
+    
+py.plot(fig)
 
 # %%
-data2 = data[['Timestamp','trips']]
-data2.columns = ['ds','y']
+dataNEW = pd.read_csv( "assignment_data_test.csv" )
 
-# %%
-# Initialize Prophet instance and fit to data
+#use the model to predict the number of trips using columns month, day, and hour
+pred = modelFit.predict(dataNEW[['month', 'day', 'hour']])
 
-model = Prophet(changepoint_prior_scale=0.5, daily_seasonality = True )
-# Higher prior values will tend toward overfitting
-#     Lower values will tend toward underfitting
-
-modelFit = model.fit(data2)
-
-# %%
-# Create timeline for 1 year in future, 
-#   then generate predictions based on that timeline
-
-future = modelFit.make_future_dataframe(periods=744, freq =' H')
-pred = modelFit.predict(future)
-
-# %%
-# Create plots of forecast and truth, 
-#   as well as component breakdowns of the trends
-
-plt = modelFit.plot(pred)
-plt.savefig("prophet.png")
-
-comp = modelFit.plot_components(pred)
-
-# %%
-pred = pred[['yhat']]
-pred = pred[-744:]
 
 
