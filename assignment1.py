@@ -20,8 +20,6 @@ y,x = pt.dmatrices( eqn, data=data )
 model = LinearGAM( s(0) + s(1) + s(2) )
 modelFit = model.gridsearch( np.asarray(x), y )
 
-modelFit._is_fitted = True
-
 # %%
 # Specify plot titles and shape
 titles = [ 'month', 'day', 'hour' ]
