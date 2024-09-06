@@ -7,6 +7,8 @@ Original file is located at
     https://colab.research.google.com/drive/1eyzaeuvgAKlVR38hTfUysIXwfcW3vImV
 """
 
+!pip install pygam
+
 # %%
 from pygam import LinearGAM, s, f, l
 import pandas as pd
