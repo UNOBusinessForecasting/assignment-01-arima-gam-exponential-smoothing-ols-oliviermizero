@@ -28,5 +28,3 @@ test_data = pd.read_csv("https://github.com/dustywhite7/econ8310-assignment1/raw
 X_test = test_data[['hour']]
 
 pred = modelFit.predict(X_test)
-
-pred
