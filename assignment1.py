@@ -12,7 +12,6 @@ Original file is located at
 import statsmodels.formula.api as smf
 import pandas as pd
 
-# Import data to estimate the weight of fish sold at market
 data = pd.read_csv("https://github.com/dustywhite7/econ8310-assignment1/raw/main/assignment_data_train.csv")
 
 data.head()
